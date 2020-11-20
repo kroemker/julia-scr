@@ -77,3 +77,10 @@ ComplexNumber ComplexNumber::operator- ()
 	ComplexNumber complexNumber(-this->real, -this->imag);
 	return complexNumber;
 }
+
+std::string ComplexNumber::toString() 
+{
+	char n[20];
+	sprintf_s(n, "%.2f + %.2f i", real, imag);
+	return std::string(n);
+}

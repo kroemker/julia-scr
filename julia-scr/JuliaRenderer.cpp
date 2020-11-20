@@ -1,7 +1,7 @@
 #include "JuliaRenderer.h"
 
-JuliaRenderer::JuliaRenderer(sf::Uint8 pixels[], int width, int height, double escapeRadius, int iterations, ComplexFunctor* complexFunction, ColorScheme colorScheme)
-	: pixels(pixels), width(width), height(height), escapeRadius(escapeRadius), maxIters(iterations), complexFunction(complexFunction), colorScheme(colorScheme)
+JuliaRenderer::JuliaRenderer(sf::Uint8 pixels[], int width, int height, double escapeRadius, int iterations, ComplexNumber* initialComplexParameter, ComplexFunctor* complexFunction, ColorScheme colorScheme)
+	: pixels(pixels), width(width), height(height), escapeRadius(escapeRadius), maxIters(iterations), complexParameter(initialComplexParameter), complexFunction(complexFunction), colorScheme(colorScheme)
 {
 	focalX = focalY = 0;
 	viewSize = 2 * escapeRadius;
@@ -61,7 +61,7 @@ ComplexNumber JuliaRenderer::getClosestFatouPoint(ComplexNumber& c)
 	return closestFatou;
 }
 
-void JuliaRenderer::draw(ComplexNumber& c)
+void JuliaRenderer::draw()
 {
 	for (int x = 0; x < width; x++)
 	{
@@ -74,7 +74,7 @@ void JuliaRenderer::draw(ComplexNumber& c)
 			int iters = 0;
 			while ((z.real * z.real + z.imag * z.imag < escapeRadius * escapeRadius) && (iters < maxIters))
 			{
-				z = (*complexFunction)(z, c);
+				z = (*complexFunction)(z, *complexParameter);
 				iters++;
 			}
 

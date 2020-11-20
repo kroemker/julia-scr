@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 class ComplexNumber
 {
 public:
@@ -20,6 +22,7 @@ public:
 
 	ComplexNumber operator-();
 
+	std::string toString();
 
 	double real;
 	double imag;
