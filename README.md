@@ -22,3 +22,5 @@ This is a Julia set visualizer that can be used as a screensaver. The [SFML](htt
   3. Use PageUp/PageDown keys to adjust the number of iterations
   4. Use F1-F4 keys to adjust the complex function
   5. Use T to enable/disable the HUD
+  6. Use W/A/S/D to move the focal point
+  7. Use Q/E to zoom in/out

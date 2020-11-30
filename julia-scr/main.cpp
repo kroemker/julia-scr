@@ -13,7 +13,6 @@ void cleanupWindow();
 void runScreensaver();
 void handleInput();
 void runInteractive();
-void zoomIn(JuliaRenderer* juliaRenderer);
 void updateParameter(ComplexNumber* c, ComplexNumber* target);
 inline double interpolate(double a, double b, double alpha);
 inline double randZeroOne();
@@ -67,7 +66,6 @@ void cleanupWindow() {
 
 void runInteractive() 
 {
-	printf("%s\n", funcs[0]->toString().c_str());
 	ComplexNumber c(0, 0);
 	juliaRenderer = new JuliaRenderer(pixels, texture.getSize().x, texture.getSize().y, 2.0, 100, &c, funcs[0], JuliaRenderer::ColorScheme::HSVGradient);
 
@@ -83,7 +81,6 @@ void runInteractive()
 	infoText.setCharacterSize(30);
 	infoText.setFont(font);
 
-	char buffer[32];
 	while (window->isOpen())
 	{
 		sf::Event event;
@@ -101,11 +98,14 @@ void runInteractive()
 		window->clear();
 
 		if (showHUD) {
-			_itoa_s(juliaRenderer->maxIters, buffer, 10);
-			infoText.setString(juliaRenderer->complexFunction->toString() + "\nc = " + c.toString() + "\nIterations: " + std::string(buffer));
+			infoText.setString(juliaRenderer->complexFunction->toString() 
+				+ "\nc = " + c.toString() 
+				+ "\nIterations: " + std::to_string(juliaRenderer->maxIters) 
+				+ "\nFocal point: " + juliaRenderer->focalPoint.toString() 
+				+ "\nView size: " + std::to_string(juliaRenderer->viewSize));
 		}
 
-		juliaRenderer->draw();
+		juliaRenderer->drawResponsive();
 
 		texture.update(pixels);
 
@@ -164,8 +164,30 @@ void handleInput()
 		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
 			juliaRenderer->complexParameter->real -= stepSize;
 
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::R))
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::R)) {
 			*juliaRenderer->complexParameter = ComplexNumber(0, 0);
+			juliaRenderer->viewSize = 2.0 * juliaRenderer->escapeRadius;
+		}
+
+		// zooming
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
+			juliaRenderer->viewSize = juliaRenderer->viewSize * 0.99999;
+		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::E))
+			juliaRenderer->viewSize = juliaRenderer->viewSize * 1.00001;
+
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
+			juliaRenderer->focalPoint.imag += stepSize;
+		}
+		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
+			juliaRenderer->focalPoint.imag -= stepSize;
+		}
+
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
+			juliaRenderer->focalPoint.real -= stepSize;
+		}
+		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
+			juliaRenderer->focalPoint.real += stepSize;
+		}
 	}
 }
 
@@ -182,8 +204,7 @@ void runScreensaver()
 	{
 		sprite->setScale((float)window->getSize().x / (float)texture.getSize().x, (float)window->getSize().y / (float)texture.getSize().y);
 		sprite->setPosition(0,0);
-		ComplexNumber fatou = juliaRenderer->getClosestFatouPoint(c);
-		juliaRenderer->setFocalPoint(fatou.real, fatou.imag);
+		juliaRenderer->focalPoint = juliaRenderer->getClosestFatouPoint(c);
 	}
 
 	double iterc = 0;
@@ -211,8 +232,10 @@ void runScreensaver()
 
 		window->display();
 
-		if (zoomMode)
-			zoomIn(juliaRenderer);
+		if (zoomMode) {
+			juliaRenderer->viewSize *= 0.99;
+			juliaRenderer->maxIters += 10;
+		}
 		else
 		{
 			updateParameter(&c, &target);
@@ -234,12 +257,6 @@ void runScreensaver()
 	}
 
 	cleanupWindow();
-}
-
-void zoomIn(JuliaRenderer* juliaRenderer)
-{
-	double v = juliaRenderer->getViewSize();
-	juliaRenderer->setViewSize(v * 0.99);
 }
 
 void updateParameter(ComplexNumber* c, ComplexNumber* target)

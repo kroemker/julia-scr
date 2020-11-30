@@ -5,6 +5,7 @@
 class ComplexNumber
 {
 public:
+	ComplexNumber();
 	ComplexNumber(double real, double imag);
 	~ComplexNumber();
 

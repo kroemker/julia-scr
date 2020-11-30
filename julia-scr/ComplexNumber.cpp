@@ -2,6 +2,10 @@
 
 #include <cstdio>
 
+ComplexNumber::ComplexNumber() : real(0), imag(0)
+{
+}
+
 ComplexNumber::ComplexNumber(double real, double imag) : real(real), imag(imag)
 {
 }

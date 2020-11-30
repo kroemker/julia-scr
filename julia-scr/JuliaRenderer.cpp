@@ -3,29 +3,14 @@
 JuliaRenderer::JuliaRenderer(sf::Uint8 pixels[], int width, int height, double escapeRadius, int iterations, ComplexNumber* initialComplexParameter, ComplexFunctor* complexFunction, ColorScheme colorScheme)
 	: pixels(pixels), width(width), height(height), escapeRadius(escapeRadius), maxIters(iterations), complexParameter(initialComplexParameter), complexFunction(complexFunction), colorScheme(colorScheme)
 {
-	focalX = focalY = 0;
+	x = 0; 
+	y = 0;
 	viewSize = 2 * escapeRadius;
 }
 
 JuliaRenderer::~JuliaRenderer()
 {
 
-}
-
-void JuliaRenderer::setFocalPoint(double x, double y)
-{
-	focalX = x;
-	focalY = y;
-}
-
-void JuliaRenderer::setViewSize(double sz)
-{
-	viewSize = sz;
-}
-
-double JuliaRenderer::getViewSize()
-{
-	return viewSize;
 }
 
 ComplexNumber JuliaRenderer::getClosestFatouPoint(ComplexNumber& c)
@@ -36,8 +21,8 @@ ComplexNumber JuliaRenderer::getClosestFatouPoint(ComplexNumber& c)
 	{
 		for (int y = 0; y < height; y++)
 		{
-			double r = focalX + x * (viewSize / (double)width) - (viewSize / 2);
-			double i = focalY + y * (viewSize / (double)height) - (viewSize / 2);
+			double r = focalPoint.real + x * (viewSize / (double)width) - (viewSize / 2);
+			double i = focalPoint.imag + y * (viewSize / (double)height) - (viewSize / 2);
 
 			ComplexNumber z(r, i);
 			int iters = 0;
@@ -61,48 +46,69 @@ ComplexNumber JuliaRenderer::getClosestFatouPoint(ComplexNumber& c)
 	return closestFatou;
 }
 
-void JuliaRenderer::draw()
-{
-	for (int x = 0; x < width; x++)
+void JuliaRenderer::drawInner() {
+	double r = focalPoint.real + x * (viewSize / (double)width) - (viewSize / 2);
+	double i = focalPoint.imag + y * (viewSize / (double)height) - (viewSize / 2);
+
+	ComplexNumber z(r, i);
+	int iters = 0;
+	while ((z.real * z.real + z.imag * z.imag < escapeRadius * escapeRadius) && (iters < maxIters))
 	{
-		for (int y = 0; y < height; y++)
+		z = (*complexFunction)(z, *complexParameter);
+		iters++;
+	}
+
+	if (iters >= maxIters)
+	{
+		setPixel(pixels, width, height, x, y, 0, 0, 0, 255);
+	}
+	else
+	{
+		switch (colorScheme)
 		{
-			double r = focalX + x * (viewSize / (double)width) - (viewSize / 2);
-			double i = focalY + y * (viewSize / (double)height) - (viewSize / 2);
-
-			ComplexNumber z(r, i);
-			int iters = 0;
-			while ((z.real * z.real + z.imag * z.imag < escapeRadius * escapeRadius) && (iters < maxIters))
-			{
-				z = (*complexFunction)(z, *complexParameter);
-				iters++;
-			}
-
-			if (iters >= maxIters)
-			{
-				setPixel(pixels, width, height, x, y, 0, 0, 0, 255);
-			}
-			else
-			{
-				switch (colorScheme)
-				{
-				case RedBasedRGB:
-					setPixel(pixels, width, height, x, y, iters << 2, iters, iters << 1, 255);
-					break;
-				case GreenBasedRGB:
-					setPixel(pixels, width, height, x, y, iters << 1, iters << 2, iters, 255);
-					break;
-				case BlueBasedRGB:
-					setPixel(pixels, width, height, x, y, iters, iters << 1, iters << 2, 255);
-					break;
-				case HSVGradient:
-					sf::Color c = getGradientColor((float)iters / (float)maxIters);
-					setPixel(pixels, width, height, x, y, c.r, c.g, c.b, c.a);
-					break;
-				}
-			}
+		case RedBasedRGB:
+			setPixel(pixels, width, height, x, y, iters << 2, iters, iters << 1, 255);
+			break;
+		case GreenBasedRGB:
+			setPixel(pixels, width, height, x, y, iters << 1, iters << 2, iters, 255);
+			break;
+		case BlueBasedRGB:
+			setPixel(pixels, width, height, x, y, iters, iters << 1, iters << 2, 255);
+			break;
+		case HSVGradient:
+			sf::Color c = getGradientColor((float)iters / (float)maxIters);
+			setPixel(pixels, width, height, x, y, c.r, c.g, c.b, c.a);
+			break;
 		}
 	}
+}
+
+void JuliaRenderer::draw() {
+	for (x = 0; x < width; x++)
+	{
+		for (y = 0; y < height; y++)
+		{
+			drawInner();
+		}
+	}
+}
+
+void JuliaRenderer::drawResponsive()
+{
+	sf::Clock clock;
+	clock.restart();
+	for (; x < width; x++)
+	{
+		for (; y < height; y++)
+		{
+			if (clock.getElapsedTime().asMilliseconds() > 250)
+				return;
+
+			drawInner();
+		}
+		y = 0;
+	}
+	x = 0;
 }
 
 void JuliaRenderer::setPixel(sf::Uint8 pixels[], int width, int height, int x, int y, sf::Uint8 r, sf::Uint8 g, sf::Uint8 b, sf::Uint8 a)
