@@ -12,7 +12,10 @@ public:
 		RedBasedRGB,
 		GreenBasedRGB,
 		BlueBasedRGB,
-		HSVGradient
+		RedBasedGradientHSV,
+		GreenBasedGradientHSV,
+		BlueBasedGradientHSV,
+		NumColorSchemes
 	};
 
 	JuliaRenderer(sf::Uint8 pixels[], int width, int height, double escapeRadius, int iterations, ComplexNumber* initialComplexParameter, ComplexFunctor* complexFunction, ColorScheme colorScheme = RedBasedRGB);

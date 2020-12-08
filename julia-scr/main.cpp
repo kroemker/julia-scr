@@ -22,7 +22,9 @@ sf::Uint8* pixels;
 sf::Texture texture;
 sf::Sprite* sprite;
 JuliaRenderer* juliaRenderer;
-ComplexFunctor* funcs[] = { new QuadraticPolynomial(), new CubicPolynomial(), new QuarticPolynomial(), new CubicInverseScaled() };
+ComplexFunctor* funcs[] = { new QuadraticPolynomial(), new CubicPolynomial(), new QuarticPolynomial(), 
+							new CubicInverseScaled(), new QuadraticPolynomialScaled(),
+							new QuadraticPolynomialSpecial(), new CubicPolynomialSpecial, new QuarticPolynomialSpecial()};
 const int numFuncs = sizeof(funcs) / sizeof(ComplexFunctor*);
 
 int main(int argc, char* argv[])
@@ -47,7 +49,7 @@ int main(int argc, char* argv[])
 
 void setupWindow() {
 	sf::VideoMode videoMode = sf::VideoMode::getDesktopMode();
-	window = new sf::RenderWindow(videoMode, "julia-scr", sf::Style::Fullscreen);
+	window = new sf::RenderWindow(videoMode, "julia-scr", sf::Style::None);
 	window->setMouseCursorVisible(false);
 
 	int sz = videoMode.width > videoMode.height ? videoMode.height : videoMode.width;
@@ -67,7 +69,7 @@ void cleanupWindow() {
 void runInteractive() 
 {
 	ComplexNumber c(0, 0);
-	juliaRenderer = new JuliaRenderer(pixels, texture.getSize().x, texture.getSize().y, 2.0, 100, &c, funcs[0], JuliaRenderer::ColorScheme::HSVGradient);
+	juliaRenderer = new JuliaRenderer(pixels, texture.getSize().x, texture.getSize().y, 2.0, 100, &c, funcs[0], (JuliaRenderer::ColorScheme)(rand() % 3 + 3));
 
 	sf::Thread inputThread(&handleInput);
 	inputThread.launch();
@@ -188,17 +190,29 @@ void handleInput()
 		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
 			juliaRenderer->focalPoint.real += stepSize;
 		}
+
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Tab)) {
+			if (k > kStep) {
+				juliaRenderer->colorScheme = (JuliaRenderer::ColorScheme)((juliaRenderer->colorScheme + 1) % JuliaRenderer::ColorScheme::NumColorSchemes);
+				k -= kStep;
+			}
+			else
+			{
+				k += stepSize;
+			}
+		}
 	}
 }
 
 void runScreensaver()
 {
-	bool zoomMode = rand() < RAND_MAX / 4;
+	bool zoomMode = rand() < RAND_MAX / 5;
 
 	// setup julia rendering
 	ComplexNumber c(-1 + 2 * randZeroOne(), -1 + 2 * randZeroOne());
 	ComplexNumber target(-1 + 2 * randZeroOne(), -1 + 2 * randZeroOne());
-	juliaRenderer = new JuliaRenderer(pixels, texture.getSize().x, texture.getSize().y, 2.0, 100, &c, funcs[rand() % numFuncs], (JuliaRenderer::ColorScheme)(rand() % 4));
+	juliaRenderer = new JuliaRenderer(pixels, texture.getSize().x, texture.getSize().y, 2.0, 100, &c, funcs[rand() % numFuncs], 
+									  (JuliaRenderer::ColorScheme)(rand() % JuliaRenderer::ColorScheme::NumColorSchemes));
 
 	if (zoomMode)
 	{
@@ -234,7 +248,7 @@ void runScreensaver()
 
 		if (zoomMode) {
 			juliaRenderer->viewSize *= 0.99;
-			juliaRenderer->maxIters += 10;
+			juliaRenderer->maxIters += 20;
 		}
 		else
 		{
@@ -242,15 +256,15 @@ void runScreensaver()
 
 			// update fps
 			sf::Time elapsed = clock.restart();
-			fps = 1 / elapsed.asSeconds();
+			fps = 1.0 / (double)elapsed.asSeconds();
 			if (fps < targetFPS)
 			{
 				iterc += targetFPS / fps;
-				juliaRenderer->maxIters -= juliaRenderer->maxIters > 50 ? iterc : 0;
+				juliaRenderer->maxIters = juliaRenderer->maxIters > 100 ? juliaRenderer->maxIters - iterc : 100;
 			}
 			else
 			{
-				iterc -= iterc > 0 ? fps / targetFPS : 0;
+				iterc = iterc > 0 ? iterc - fps / targetFPS : 0;
 				juliaRenderer->maxIters += juliaRenderer->maxIters < 1000 ? 5 : 0;
 			}
 		}

@@ -2,7 +2,7 @@
 This is a Julia set visualizer that can be used as a screensaver. The [SFML](https://www.sfml-dev.org) library is used for visualization, so make sure to link against it when compiling.
 
 ## Features
-- different color schemes (red, green, blue, HSV)
+- different color schemes (RGB, HSV)
 - multiple complex functions
 - fps adjustment mechanism
 - two screensaver modes:
@@ -24,3 +24,4 @@ This is a Julia set visualizer that can be used as a screensaver. The [SFML](htt
   5. Use T to enable/disable the HUD
   6. Use W/A/S/D to move the focal point
   7. Use Q/E to zoom in/out
+  8. Use Tab to switch color schemes

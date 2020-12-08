@@ -64,6 +64,7 @@ void JuliaRenderer::drawInner() {
 	}
 	else
 	{
+		sf::Color c;
 		switch (colorScheme)
 		{
 		case RedBasedRGB:
@@ -75,9 +76,17 @@ void JuliaRenderer::drawInner() {
 		case BlueBasedRGB:
 			setPixel(pixels, width, height, x, y, iters, iters << 1, iters << 2, 255);
 			break;
-		case HSVGradient:
-			sf::Color c = getGradientColor((float)iters / (float)maxIters);
+		case RedBasedGradientHSV:
+			c = getGradientColor((float)iters / (float)maxIters);
 			setPixel(pixels, width, height, x, y, c.r, c.g, c.b, c.a);
+			break;
+		case GreenBasedGradientHSV:
+			c = getGradientColor((float)iters / (float)maxIters);
+			setPixel(pixels, width, height, x, y, c.g, c.r, c.b, c.a);
+			break;
+		case BlueBasedGradientHSV:
+			c = getGradientColor((float)iters / (float)maxIters);
+			setPixel(pixels, width, height, x, y, c.b, c.g, c.r, c.a);
 			break;
 		}
 	}

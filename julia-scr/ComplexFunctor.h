@@ -74,3 +74,60 @@ public:
 		return "f(z) = 1/c * (z³ + z² + z)";
 	}
 };
+
+class QuadraticPolynomialSpecial : public ComplexFunctor
+{
+public:
+	ComplexNumber operator()(ComplexNumber& z, ComplexNumber& c)
+	{
+		return z * z - z + c;
+	}
+
+	virtual std::string toString() const
+	{
+		return "f(z) = z² - z + c";
+	}
+};
+
+class CubicPolynomialSpecial : public ComplexFunctor
+{
+public:
+	ComplexNumber operator()(ComplexNumber& z, ComplexNumber& c)
+	{
+		return z * z * z - z * z + z + c;
+	}
+
+	virtual std::string toString() const
+	{
+		return "f(z) = z³ - z² + z + c";
+	}
+};
+
+class QuarticPolynomialSpecial : public ComplexFunctor
+{
+public:
+	ComplexNumber operator()(ComplexNumber& z, ComplexNumber& c)
+	{
+		return z * z * z * z - z * z * z + z * z - z + c;
+	}
+
+	virtual std::string toString() const
+	{
+		return "f(z) = z^4 - z³ + z² - z + c";
+	}
+};
+
+
+class QuadraticPolynomialScaled : public ComplexFunctor
+{
+public:
+	ComplexNumber operator()(ComplexNumber& z, ComplexNumber& c)
+	{
+		return c * c * z * z - c * z;
+	}
+
+	virtual std::string toString() const
+	{
+		return "f(z) = c²z² - c*z";
+	}
+};
